@@ -5,9 +5,9 @@
   "architecture": "spec/architecture/controller-architecture.md",
   "buildProcess": "spec/operations/controller-build-process.md",
   "activeWorkItem": "CTRL-009",
-  "status": "READY",
+  "status": "COMPLETE",
   "automationStage": "STAGE-1-STATE-MACHINE-AUTOMATION",
-  "completed": ["CTRL-001", "CTRL-002", "CTRL-003", "CTRL-004", "CTRL-005", "CTRL-006", "CTRL-007", "CTRL-008"],
+  "completed": ["CTRL-001", "CTRL-002", "CTRL-003", "CTRL-004", "CTRL-005", "CTRL-006", "CTRL-007", "CTRL-008", "CTRL-009"],
   "rules": {
     "repositoryIsSourceOfTruth": true,
     "controllerRuntimeStateIsReconstructible": true,
@@ -17,5 +17,5 @@
     "humanOperatorIsTemporaryMechanicalController": true,
     "architectMustAnnounceAutomationStage": true
   },
-  "nextAction": "CTRL-009 — Recovery / idempotency is explicitly defined, frozen, and activated as the sole READY work item. Z.ai may implement only spec/work-items/CTRL-009.md from this exact governance activation base; the worker may not merge, approve, redefine authority, or claim completion. Stage 1 remains active."
+  "nextAction": "CTRL-009 is complete and reconciled from observed implementation merge 3d5e573f121c710386881d8db3ee3476c82176e3. Stage 1 remains active. CTRL-010 is the next roadmap item but is not yet defined, frozen, or eligible."
 }
