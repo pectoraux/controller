@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pectoraux-controller"
+version = "0.1.0"
+description = "Orchestration runtime for governed software delivery across Pectoraux repositories (CTRL-001 foundation)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+license = { text = "Proprietary" }
+
+[tool.setuptools.packages.find]
+include = ["controller*"]
+
+[tool.setuptools.package-data]
+controller = ["py.typed"]
+
+[tool.mypy]
+# CTRL-001 requires explicit, typed interfaces; strict mode is the floor.
+strict = true
+python_version = "3.10"
+files = ["controller", "tests"]
+warn_unreachable = true
+show_error_codes = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # import order
+    "UP",  # modernize syntax
+    "B",   # bugbear
+]
