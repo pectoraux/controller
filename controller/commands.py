@@ -29,10 +29,12 @@ class CommandName(str, Enum):
     """Closed set of commands the controller boundary accepts.
 
     The first group drives the happy-path lifecycle defined by the frozen
-    architecture. The second group (ESCALATE/BLOCK/CANCEL) is the fail-closed
-    exception path: it is available from any non-terminal state and resolves
-    lifecycle handling into a terminal exception state for explicit human
-    disposition.
+    architecture. The second group (ESCALATE/BLOCK/CANCEL) is **reserved
+    vocabulary only**: the architecture names the terminal exception states
+    but authorizes no transitions into them, so these commands have no
+    entries in the frozen transition table and fail closed from every
+    state. Granting them transitions is an explicit architecture decision
+    reserved to a future work order.
     """
 
     DISPATCH = "DISPATCH"
@@ -54,7 +56,10 @@ class CommandName(str, Enum):
     CANCEL = "CANCEL"
 
 
-#: Exception-path commands, valid from any non-terminal state.
+#: Reserved exception commands. Present in the vocabulary for the boundary
+#: seam, but no transitions into the terminal exception states are
+#: authorized by the frozen architecture: dispatching any of these fails
+#: closed from every state. Entry policy is deferred to architecture.
 EXCEPTION_COMMANDS: frozenset[CommandName] = frozenset(
     {
         CommandName.ESCALATE,

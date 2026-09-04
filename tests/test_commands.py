@@ -55,11 +55,17 @@ class CommandContractTests(unittest.TestCase):
         field_names = {field.name for field in dataclasses.fields(event)}
         self.assertEqual(field_names, {"work_item", "command", "from_state", "to_state"})
 
-    def test_exception_commands_are_exactly_three(self) -> None:
+    def test_exception_commands_are_exactly_three_reserved(self) -> None:
+        """Reserved vocabulary: present at the boundary seam, unauthorized in
+        the transition table — dispatch fails closed from every state."""
         self.assertEqual(
             {name.value for name in EXCEPTION_COMMANDS},
             {"ESCALATE", "BLOCK", "CANCEL"},
         )
+        for state in LifecycleState:
+            for name in EXCEPTION_COMMANDS:
+                with self.assertRaises(InvalidTransitionError, msg=f"{state.value} + {name.value}"):
+                    dispatch(state, Command(name, WORK_ITEM))
 
 
 class BoundarySemanticsTests(unittest.TestCase):

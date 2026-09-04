@@ -1,40 +1,39 @@
 """Deterministic, fail-closed lifecycle transition rules.
 
 The transition table is the frozen architecture's state machine expressed
-as data. One lifecycle command advances exactly one state; the three
-exception commands (ESCALATE/BLOCK/CANCEL) are valid from any non-terminal
-state and land in their matching terminal exception state. Terminal states
-accept no commands at all. Any (state, command) pair not present in the
-table raises :class:`controller.errors.InvalidTransitionError` — the
-controller never guesses, skips, or coerces.
+as data. Every entry below is directly derivable from the architecture
+document's state machine section: the happy-path chain and its embedded
+review change loop (``REVIEW_PENDING -> CHANGES_REQUESTED ->
+IMPLEMENTING``). One lifecycle command advances exactly one state.
 
-Design note (explicit, for audit): the architecture document specifies the
-happy-path chain and the change loop, and names BLOCKED/ESCALATED/CANCELLED
-as *terminal exception* states without specifying their entry points. This
-module makes the minimal deterministic choice consistent with the worker
-protocol (stop/escalate from any state) and the safety gate: exception
-commands are admitted from every non-terminal state. Narrowing or widening
-this is an architecture decision, not a runtime one.
+Exception-state entry policy (review iteration 1, CTRL-001):
+
+    The architecture names BLOCKED, ESCALATED and CANCELLED as *terminal
+    exception states* but defines no transitions into them. The governance
+    documents use "escalate" only as worker/architect/recovery *behavior*,
+    never as lifecycle semantics. Therefore no entry transitions are
+    authorized here: the three exception states are declared (part of the
+    typed state set) but unreachable through this machine, and the
+    ESCALATE/BLOCK/CANCEL commands fail closed from every state. Adding
+    entry transitions is an explicit architecture decision reserved to a
+    future work order; this module must not invent them.
+
+Any (state, command) pair not present in the table raises
+:class:`controller.errors.InvalidTransitionError` — the controller never
+guesses, skips, or coerces.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 
-from controller.commands import (
-    Command,
-    CommandName,
-    Event,
-)
+from controller.commands import Command, CommandName, Event
 from controller.errors import InvalidTransitionError
-from controller.states import (
-    TERMINAL_EXCEPTION_STATES,
-    LifecycleState,
-)
+from controller.states import LifecycleState
 
-#: Happy-path and change-loop transitions, keyed by (state, command).
-#: Derived directly from the architecture state machine.
-_CORE_TRANSITIONS: dict[tuple[LifecycleState, CommandName], LifecycleState] = {
+#: The complete transition table: exactly the transitions derivable from
+#: the frozen architecture state machine. No exception-state entries.
+TRANSITIONS: Mapping[tuple[LifecycleState, CommandName], LifecycleState] = {
     (LifecycleState.READY, CommandName.DISPATCH): LifecycleState.DISPATCHED,
     (LifecycleState.DISPATCHED, CommandName.BEGIN_IMPLEMENTATION): LifecycleState.IMPLEMENTING,
     (LifecycleState.IMPLEMENTING, CommandName.OPEN_PR): LifecycleState.PR_OPEN,
@@ -53,32 +52,6 @@ _CORE_TRANSITIONS: dict[tuple[LifecycleState, CommandName], LifecycleState] = {
     (LifecycleState.COMPLETE, CommandName.ADVANCE): LifecycleState.NEXT_READY,
 }
 
-#: Where each exception command lands, from any non-terminal state.
-_EXCEPTION_TARGETS: Mapping[CommandName, LifecycleState] = {
-    CommandName.ESCALATE: LifecycleState.ESCALATED,
-    CommandName.BLOCK: LifecycleState.BLOCKED,
-    CommandName.CANCEL: LifecycleState.CANCELLED,
-}
-
-
-def _build_table() -> dict[tuple[LifecycleState, CommandName], LifecycleState]:
-    """Compose the complete frozen transition table.
-
-    Core lifecycle transitions plus exception transitions from every
-    non-terminal state. Terminal exception states get no outgoing edges.
-    """
-    table = dict(_CORE_TRANSITIONS)
-    for state in LifecycleState:
-        if state in TERMINAL_EXCEPTION_STATES:
-            continue
-        for command, target in _EXCEPTION_TARGETS.items():
-            table[(state, command)] = target
-    return table
-
-
-#: The complete, immutable transition table.
-TRANSITIONS: Mapping[tuple[LifecycleState, CommandName], LifecycleState] = _build_table()
-
 
 def allowed_commands(state: LifecycleState) -> frozenset[CommandName]:
     """Return every command accepted from ``state``.
@@ -94,7 +67,8 @@ def target_state(state: LifecycleState, command: CommandName) -> LifecycleState:
 
     Raises :class:`InvalidTransitionError` when the pair is absent from the
     frozen table. This is the single enforcement point for transition
-    validity.
+    validity — including the reserved exception commands, which have no
+    authorized transitions at all.
     """
     try:
         return TRANSITIONS[(state, command)]

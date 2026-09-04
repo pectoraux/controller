@@ -171,31 +171,32 @@ class FailClosedTests(unittest.TestCase):
             dispatch(LifecycleState.BLOCKED, Command(CommandName.DISPATCH, WORK_ITEM))
 
 
-class ExceptionPathTests(unittest.TestCase):
-    def test_exception_commands_available_from_every_non_terminal_state(self) -> None:
-        non_terminal = ALL_STATES - TERMINAL_EXCEPTION_STATES
-        for state in non_terminal:
-            self.assertTrue(EXCEPTION_COMMANDS <= allowed_commands(state), msg=state.value)
+class ReservedExceptionCommandTests(unittest.TestCase):
+    """Exception commands are reserved vocabulary with NO authorized
+    transitions (Architect review iteration 1, CTRL-001).
 
-    def test_exception_commands_reach_matching_terminal_state(self) -> None:
-        cases = [
-            (CommandName.ESCALATE, LifecycleState.ESCALATED),
-            (CommandName.BLOCK, LifecycleState.BLOCKED),
-            (CommandName.CANCEL, LifecycleState.CANCELLED),
-        ]
-        for name, target in cases:
-            for state in ALL_STATES - TERMINAL_EXCEPTION_STATES:
-                self.assertIs(target_state(state, name), target)
+    The architecture names BLOCKED/ESCALATED/CANCELLED as terminal
+    exception states but defines no entry transitions. Governance uses
+    "escalate" only as worker/architect/recovery behavior, never as
+    lifecycle semantics. These tests pin that decision: every exception
+    command fails closed from every state, and the exception states stay
+    unreachable through the machine until an explicit architecture
+    decision grants entries.
+    """
 
-    def test_escalation_from_ready_is_a_terminal_dead_end(self) -> None:
-        event = dispatch(LifecycleState.READY, Command(CommandName.ESCALATE, WORK_ITEM))
-        self.assertIs(event.to_state, LifecycleState.ESCALATED)
-        self.assertEqual(allowed_commands(LifecycleState.ESCALATED), frozenset())
+    def test_exception_commands_fail_closed_from_every_state(self) -> None:
+        for state in sorted(ALL_STATES, key=lambda s: s.value):
+            for name in EXCEPTION_COMMANDS:
+                with self.assertRaises(InvalidTransitionError, msg=f"{state.value} + {name.value}"):
+                    dispatch(state, Command(name, WORK_ITEM))
 
+    def test_no_transition_targets_any_terminal_exception_state(self) -> None:
+        for (_state, _name), target in TRANSITIONS.items():
+            self.assertNotIn(target, TERMINAL_EXCEPTION_STATES)
 
-class ReachabilityTests(unittest.TestCase):
-    def test_every_state_is_reachable_from_ready(self) -> None:
-        """No orphan states: the table covers the whole declared state set."""
+    def test_terminal_exception_states_are_declared_but_unreachable(self) -> None:
+        """Documenting the deferred policy: the three exception states are
+        part of the typed state set yet unreachable via the frozen table."""
         seen = {LifecycleState.READY}
         frontier = [LifecycleState.READY]
         while frontier:
@@ -205,7 +206,30 @@ class ReachabilityTests(unittest.TestCase):
                 if successor not in seen:
                     seen.add(successor)
                     frontier.append(successor)
-        self.assertEqual(seen, set(ALL_STATES))
+        self.assertEqual(seen, set(ALL_STATES) - TERMINAL_EXCEPTION_STATES)
+        self.assertEqual(set(ALL_STATES) - seen, set(TERMINAL_EXCEPTION_STATES))
+
+    def test_exception_commands_never_appear_in_allowed_commands(self) -> None:
+        for state in ALL_STATES:
+            self.assertEqual(allowed_commands(state) & EXCEPTION_COMMANDS, frozenset())
+
+
+class ReachabilityTests(unittest.TestCase):
+    def test_every_non_exception_state_is_reachable_from_ready(self) -> None:
+        """No orphan lifecycle states: every state on the authorized path is
+        reachable; the terminal exception states are the declared-but-
+        unreachable remainder (see ReservedExceptionCommandTests)."""
+        seen = {LifecycleState.READY}
+        frontier = [LifecycleState.READY]
+        while frontier:
+            current = frontier.pop()
+            for name in allowed_commands(current):
+                successor = target_state(current, name)
+                if successor not in seen:
+                    seen.add(successor)
+                    frontier.append(successor)
+        self.assertEqual(seen, set(ALL_STATES) - TERMINAL_EXCEPTION_STATES)
+        self.assertEqual(len(seen), 13)
 
     def test_event_fold_rejects_wrong_from_state(self) -> None:
         event = dispatch(LifecycleState.READY, Command(CommandName.DISPATCH, WORK_ITEM))
