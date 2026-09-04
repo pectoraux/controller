@@ -29,3 +29,29 @@ See:
 - `spec/roadmap/roadmap.md`
 - `spec/work-items/CTRL-001.md`
 - `spec/state/controller-program-state.json`
+
+## Development
+
+The controller package is pure Python standard library (Python >= 3.10, no runtime dependencies, no network access, no credentials). All commands run from the repository root.
+
+Run the test suite:
+
+```sh
+python -m unittest discover -s tests -t .
+```
+
+Validate repository authority and reconstruct controller state (offline smoke test):
+
+```sh
+python -m controller validate --repo .
+```
+
+Static/type checks (where configured, via `pyproject.toml`):
+
+```sh
+mypy
+ruff check controller tests
+ruff format --check controller tests
+```
+
+The test suite exercises: happy-path lifecycle transitions (deterministic), invalid transitions (fail closed), restart/state reconstruction from repository authority, contradictory authority rejection, and a forbidden-surface guard (no network/subprocess/persistence imports in the controller package). No external service or credential is required to run any of the above.
