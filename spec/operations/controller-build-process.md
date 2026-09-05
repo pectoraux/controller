@@ -120,11 +120,11 @@ Runtime state must be reconstructible from repository/GitHub evidence. No hidden
 
 ## Current operating position
 
-CTRL-001 through CTRL-012 are accepted, merged and reconciled. CTRL-012 — Browser Control Surface Foundation is complete. CTRL-013 — GitHub Browser-App Integration is now the sole active and authorized Work Item.
+CTRL-001 through CTRL-013 are accepted, merged and reconciled. CTRL-013 — GitHub Browser-App Integration is complete. CTRL-014 — Z.ai Browser Worker Adapter is the next planned item but is **not activated**.
 
 Stage 7 active.
 You still perform: product/architecture authority; policy definition/change; semantic Architect review where required; contradiction, safety and exception handling; human authentication at provider sites; and future roadmap/work-order activation.
 You no longer need to perform: routine mechanical orchestration already covered by the accepted Controller capabilities, and, after CTRL-014/016, routine supported browser interaction with configured providers.
-The next automation milestone is: **CTRL-013 — GitHub Browser-App Integration**.
+The next automation milestone is: **CTRL-014 — Z.ai Browser Worker Adapter, pending explicit activation after CTRL-013 reconciliation.**
 
 A fresh session continues by reading, in order: `spec/state/controller-program-state.json`, `spec/roadmap/roadmap.md`, `spec/architecture/controller-architecture.md`, this document, `spec/work-items/<active item>.md`, and `spec/operations/fresh-session-handoff.md`. The exact current `main` SHA must be observed before dispatch. No conversation history is required.
