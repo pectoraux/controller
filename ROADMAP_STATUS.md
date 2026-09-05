@@ -7,14 +7,14 @@
 > file is wrong. It never claims an action that has not actually occurred.
 
 - **current state:** `STAGE_7_ACTIVE`
-- **active Work Order:** CTRL-013 — GitHub Browser-App Integration (READY; review iteration 2 correction delivered, awaiting re-review)
-- **PR:** #41 (implementation, open) — branch `ctrl-013-github-browser-app`; iteration-2 correction head `ee654b6` (base `894b443`, after implementation `0fbdaf6`, iteration-1 correction `099d189` + delivery records)
-- **last completed architect action:** CTRL-013 REQUEST_CHANGES review iteration 2 (PR #41 comment 5551829016) — the iteration-1 correction had introduced a new violation: mergeAuthorization.js re-implemented governance/review policy (active-work-item binding + exact-head approval filtering, copies of `_require_merge_policy`) and hard-coded a reviewer identity; the required correction restores the authority split (transport only, no governance interpretation, no hard-coded reviewer, the runtime stays the authorization owner, the handoff unavailable until CTRL-016); iteration-1 REQUEST_CHANGES (comment 5551517415) before that
-- **last completed worker action:** CTRL-013 review iteration 2 correction delivered on the SAME PR #41 — mergeAuthorization.js DELETED (no policy evaluator in the extension; no reviewer identity hard-coded anywhere); the message boundary validates only the closed transport form; the service route fails closed `RUNTIME_AUTHORIZATION_UNAVAILABLE` with ZERO network (the runtime-authorization handoff is not composed — CTRL-016 scope; no second authorization mechanism invented); the client merge transport is pure (structural completeness per `_as_merge_request`, exactly one POST with the frozen method + exact-head sha pin, zero reads — GitHub's own refusals surface typed); regression proofs pinned (session + fully-populated fabricated identity -> typed refusal with zero requests of any kind; transport one-POST/zero-read) in the Node suite (153/153)
-- **current implementation action:** CTRL-013 iteration-2 correction complete — awaiting Architect re-review of PR #41 at the new head; full battery green (node 153/153, pytest 651 + 209 subtests, mypy --strict clean, ruff clean, controller validate/domain/status exit 0, audit 8/8 PASS incl. the corrected boundary pins, live probe 17/17 PASS)
-- **last update (UTC):** 2026-09-05T13:05:00Z
-- **next planned item:** CTRL-014 — Z.ai Browser Worker Adapter (requires explicit activation after CTRL-013 completes and reconciles)
-- **next step:** Architect re-reviews PR #41 (same worker, same PR continuation on REQUEST_CHANGES; no merge, no approval, no completion by the worker)
+- **active Work Order:** none — CTRL-001 through CTRL-013 are complete and reconciled (CTRL-013 completion recorded on this reconciliation branch, pending Architect review)
+- **PR:** CTRL-013 implementation PR #41 merged at `cbb40d00c4971d4b8cb9af78d8eb3c4dd179ab99`; reconciliation checkpoint delivered on PR #42 (branch `reconcile-ctrl-013`)
+- **last completed architect action:** exact-head Architect approval of CTRL-013 PR #41 at head `03ce1155673cff69e5ab06401d346ec4aafa9320` (comment 5551932732), one authorized merge, then the POST-MERGE RECONCILIATION HANDOFF (comment 5551934004) and the RECONCILIATION CONTINUATION / GO (comment 5552088830)
+- **last completed worker action:** CTRL-013 post-merge reconciliation delivered — machine state COMPLETE/completed x13, work-order completion record, roadmap and build-process checkpoints, real-repository test pins flipped to the completed authority (post-completion dispatch refusal pinned)
+- **current implementation action:** none — reconciliation awaiting Architect review on PR #42; full battery green on the reconciliation branch (pytest 651 + 209 subtests, node 153/153, mypy --strict clean, ruff clean, controller validate/domain/status exit 0, reconciliation audit 8/8 PASS)
+- **last update (UTC):** 2026-09-05T13:28:35Z
+- **next planned item:** CTRL-014 — Z.ai Browser Worker Adapter (requires explicit activation after the CTRL-013 reconciliation is merged)
+- **next step:** Architect reviews and merges the CTRL-013 reconciliation PR #42; no successor activation by the worker
 
 ## Maintenance protocol
 
