@@ -83,10 +83,10 @@ class ContradictoryReconstructionTests(unittest.TestCase):
 
 
 class RealRepositoryReconstructionTests(unittest.TestCase):
-    def test_real_repository_reconstructs_ctrl_012_ready(self) -> None:
+    def test_real_repository_reconstructs_ctrl_013_complete(self) -> None:
         state = reconstruct(REPO_ROOT)
         self.assertEqual(state.work_item, "CTRL-013")
-        self.assertIs(state.lifecycle, LifecycleState.READY)
+        self.assertIs(state.lifecycle, LifecycleState.COMPLETE)
 
     def test_real_repository_reconstruction_is_stable(self) -> None:
         self.assertEqual(reconstruct(REPO_ROOT), reconstruct(REPO_ROOT))
